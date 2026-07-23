@@ -97,7 +97,7 @@ export class BaseAgent {
 
         if (delta.content) {
           if (!started) {
-            logger.streamStart()
+            logger.streamStart(this.config.model)
             started = true
           }
           content += delta.content

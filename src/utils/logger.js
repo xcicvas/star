@@ -34,18 +34,19 @@ export const logger = {
     console.log(`  ${highlightCode(content)}`)
   },
 
-  agent(content) {
-    // Render code blocks with borders, then output
+  agent(content, model) {
+    const label = model || 'Agent'
     const rendered = renderCodeBlock(content)
-    console.log(chalk.green(`  Agent  ${timestamp()}`))
+    console.log(chalk.green(`  ${label}  ${timestamp()}`))
     // Split by lines and print each to handle code blocks properly
     for (const line of rendered.split('\n')) {
       console.log(line)
     }
   },
 
-  streamStart() {
-    process.stdout.write(chalk.green(`  Agent  ${timestamp()}  `))
+  streamStart(model) {
+    const label = model || 'Agent'
+    process.stdout.write(chalk.green(`  ${label}  ${timestamp()}  `))
   },
 
   streamToken(token) {
