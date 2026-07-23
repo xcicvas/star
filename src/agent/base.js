@@ -13,7 +13,6 @@ export class BaseAgent {
   }
 
   async run(userInput) {
-    logger.user(userInput)
     this.messages.push({ role: 'user', content: userInput })
 
     const result = await this._loop()
