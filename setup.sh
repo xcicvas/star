@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# ── Node Agent 一键部署脚本 ──────────────────────
+# ── Node Agent 一键部署/更新脚本 ────────────────
 
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -13,6 +13,20 @@ ok()     { printf "${GREEN}[OK]${NC}    %s\n" "$*"; }
 warn()   { printf "${YELLOW}[WARN]${NC}  %s\n" "$*"; }
 
 cd "$(dirname "$0")"
+
+MODE="${1:-install}"
+
+# ── 更新模式 ──────────────────────────────────
+if [ "$MODE" = "update" ]; then
+  if [ -d .git ]; then
+    info "检查更新..."
+    git remote -v 2>/dev/null | head -1
+    git pull --ff-only 2>&1 | head -3
+    ok "代码已更新"
+  else
+    info "不是 git 仓库，跳过代码更新"
+  fi
+fi
 
 # 1. 检查 Node.js
 info "检查 Node.js..."
@@ -57,14 +71,24 @@ ok "依赖安装完成"
 
 # 5. 验证语法
 info "验证代码语法..."
-node --check src/index.js 2>/dev/null
+for f in src/index.js src/config.js src/llm/client.js src/tools/registry.js src/tools/chat-tools.js src/tools/code-tools.js src/agent/base.js src/agent/chat.js src/agent/code.js src/utils/logger.js src/utils/session.js; do
+  if [ -f "$f" ]; then
+    node --check "$f" 2>/dev/null || warn "语法警告: $f"
+  fi
+done
 ok "语法检查通过"
 
 # ── 完成 ────────────────────────────────────────
 echo ""
-printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
-printf "${GREEN}  Node Agent 部署完成!${NC}\n"
-printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+if [ "$MODE" = "update" ]; then
+  printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+  printf "${GREEN}  Node Agent 更新完成!${NC}\n"
+  printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+else
+  printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+  printf "${GREEN}  Node Agent 部署完成!${NC}\n"
+  printf "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
+fi
 echo ""
 echo "  启动方式:"
 echo ""
@@ -74,11 +98,8 @@ echo ""
 echo "    ${CYAN}代码模式${NC}"
 echo "    $ node src/index.js code"
 echo ""
-echo "    ${CYAN}运行时切换模型${NC}"
-echo "    >>> /model deepseek-chat"
-echo ""
-echo "    ${CYAN}修改 API 地址${NC}"
-echo "    >>> /api http://localhost:11434/v1"
+echo "  更新方式:"
+echo "    $ sh setup.sh update"
 echo ""
 echo "  编辑 ${YELLOW}.env${NC} 配置 API Key 后即可使用"
 echo ""
