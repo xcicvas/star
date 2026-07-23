@@ -45,7 +45,7 @@ export const logger = {
   },
 
   streamStart() {
-    process.stdout.write(chalk.green('  Agent  '))
+    process.stdout.write(chalk.green(`  Agent  ${timestamp()}  `))
   },
 
   streamToken(token) {

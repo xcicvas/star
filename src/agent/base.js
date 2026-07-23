@@ -13,16 +13,12 @@ export class BaseAgent {
   }
 
   async run(userInput) {
-    logger.separator()
     logger.user(userInput)
-
     this.messages.push({ role: 'user', content: userInput })
 
     const result = await this._loop()
 
     this.messages.push({ role: 'assistant', content: result })
-    logger.separator()
-
     return result
   }
 
@@ -39,7 +35,6 @@ export class BaseAgent {
       const { content, toolCalls } = await this._streamResponse(messages, tools)
 
       if (toolCalls.length > 0) {
-        // Save the assistant message with tool calls
         this.messages.push({
           role: 'assistant',
           content: content || null,
@@ -80,7 +75,6 @@ export class BaseAgent {
           }
         }
       } else {
-        // Normal text response
         return content
       }
     }
@@ -95,20 +89,22 @@ export class BaseAgent {
 
     let content = ''
     const toolCalls = []
-    logger.streamStart()
+    let started = false
 
     try {
       for await (const chunk of stream) {
         const delta = chunk.choices?.[0]?.delta
         if (!delta) continue
 
-        // Handle text content
         if (delta.content) {
+          if (!started) {
+            logger.streamStart()
+            started = true
+          }
           content += delta.content
           logger.streamToken(delta.content)
         }
 
-        // Handle tool calls
         if (delta.tool_calls) {
           for (const tc of delta.tool_calls) {
             const idx = tc.index
@@ -125,11 +121,11 @@ export class BaseAgent {
         }
       }
     } catch (e) {
-      logger.streamEnd()
+      if (started) logger.streamEnd()
       throw e
     }
 
-    logger.streamEnd()
+    if (started) logger.streamEnd()
     return { content, toolCalls: toolCalls.filter(Boolean) }
   }
 

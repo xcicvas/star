@@ -245,6 +245,7 @@ async function main() {
     try {
       sessionDirty = true
       await agent.run(input.trim())
+      logger.separator()
       autoSave()
     } catch (e) {
       logger.error(`${e.message}`)
