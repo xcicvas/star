@@ -1,0 +1,16 @@
+{
+  "name": "node-agent",
+  "version": "1.0.0",
+  "description": "A lightweight AI agent with Chat and Code modes",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "chat": "node src/index.js chat",
+    "code": "node src/index.js code"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "nanoid": "^5.0.9"
+  }
+}
